@@ -1,5 +1,6 @@
 FROM php:7.4-apache
 
-COPY . .
+RUN a2enmod rewrite
+# RUN composer require monolog/monolog
 
-ENTRYPOINT ["php", "index.php"]
+COPY . .
