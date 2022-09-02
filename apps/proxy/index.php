@@ -8,11 +8,16 @@ use Monolog\Logger;
 use Monolog\Level;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\JsonFormatter;
+use NewRelic\Monolog\Enricher\{Handler, Processor};
 
 $logger = new Logger("my_logger");
-$stream_handler = new StreamHandler("php://stdout", Level::Debug);
-$stream_handler->setFormatter(new JsonFormatter());
-$logger->pushHandler($stream_handler);
+$logger->pushProcessor(new Processor);
+
+// $streamHandler = new StreamHandler("php://stdout", Level::Debug);
+$streamHandler = new StreamHandler("php://stdout", Level::Info);
+$streamHandler->setFormatter(new JsonFormatter());
+$logger->pushHandler($streamHandler);
+// $logger->pushHandler(new Handler);
 
 // Log the message
 $logger->debug("This is a debug message.");

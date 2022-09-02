@@ -16,6 +16,7 @@ RUN rm composer-setup.php
 
 RUN /usr/local/bin/composer self-update
 RUN /usr/local/bin/composer require monolog/monolog --quiet
+RUN /usr/local/bin/composer require newrelic/monolog-enricher --quiet
 ######
 
 ### New Relic ###
