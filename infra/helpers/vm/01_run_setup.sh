@@ -17,4 +17,4 @@ done
 export NEWRELIC_LICENSE_KEY=$NEWRELIC_LICENSE_KEY
 
 # Install docker on host machine
-sudo bash ./02_install_docker.sh
+sudo bash 02_install_docker.sh
