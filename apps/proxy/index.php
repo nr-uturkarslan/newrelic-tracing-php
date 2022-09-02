@@ -5,20 +5,16 @@ declare(strict_types=1);
 require __DIR__ . "/vendor/autoload.php";
 
 use Monolog\Logger;
-use Monolog\Level;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\JsonFormatter;
+use NewRelic\Monolog\Enricher\{Handler, Processor};
 
+# Init logger
 $logger = new Logger("my_logger");
-$stream_handler = new StreamHandler("php://stdout", Level::Debug);
-$stream_handler->setFormatter(new JsonFormatter());
-$logger->pushHandler($stream_handler);
-
-// Log the message
-$logger->debug("This is a debug message.");
-$logger->info("This is an info message.");
-$logger->error("This is an error message.");
-$logger->critical("This is a critical message.");
+$logger->pushProcessor(new Processor);
+$streamHandler = new StreamHandler("php://stdout");
+$streamHandler->setFormatter(new JsonFormatter());
+$logger->pushHandler($streamHandler);
 
 spl_autoload_register(function ($class) {
     require __DIR__ . "/$class.php";
