@@ -11,9 +11,8 @@ dockerNetwork="php-tracing"
 
 # Proxy
 declare -A proxy
-proxy["name"]="proxy"
+proxy["name"]="proxy-php"
 proxy["imageName"]="proxy-php"
-proxy["namespace"]="proxy"
 proxy["port"]=8080
 ######
 
