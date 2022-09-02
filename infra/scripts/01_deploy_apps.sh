@@ -35,6 +35,7 @@ docker build \
 
 ### Run ###
 docker run \
+  -d \
   --rm \
   --network $dockerNetwork \
   --name "${proxy[name]}" \
