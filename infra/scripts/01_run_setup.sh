@@ -13,8 +13,9 @@ while (( "$#" )); do
   esac
 done
 
-# Set variables
-export NEWRELIC_LICENSE_KEY=$NEWRELIC_LICENSE_KEY
-
-# Install docker on host machine
+# Install docker
 sudo bash 02_install_docker.sh
+
+# Deploy apps
+sudo bash 03_deploy_apps.sh \
+  --license-key $NEWRELIC_LICENSE_KEY

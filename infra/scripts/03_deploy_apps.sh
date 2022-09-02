@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Get commandline arguments
+while (( "$#" )); do
+  case "$1" in
+    --license-key)
+      NEWRELIC_LICENSE_KEY="$2"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
 ##################
 ### Apps Setup ###
 ##################
