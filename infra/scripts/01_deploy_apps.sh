@@ -14,7 +14,7 @@ declare -A proxy
 proxy["name"]="proxy"
 proxy["imageName"]="proxy-php"
 proxy["namespace"]="proxy"
-proxy["port"]=80
+proxy["port"]=8080
 ######
 
 ### Docker setup ###
@@ -27,7 +27,9 @@ docker network create \
 
 # Proxy
 docker build \
-  --tag "${DOCKERHUB_NAME}/${proxy[imageName]}" \
+  --build-arg newRelicAppName=${proxy[name]} \
+  --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --tag ${proxy[imageName]} \
   "../../apps/proxy/."
 ######
 
@@ -36,6 +38,6 @@ docker run \
   --rm \
   --network $dockerNetwork \
   --name "${proxy[name]}" \
-  -p ${proxy[port]}:${proxy[port]} \
-  "${DOCKERHUB_NAME}/${proxy[imageName]}"
+  -p ${proxy[port]}:80 \
+  ${proxy[imageName]}
 ######
