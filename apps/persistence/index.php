@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->error("POST method is executed successfully.");
 
   http_response_code(201);
-  echo $result;
+  echo json_encode($responseDto);
   exit;
 }
 else {

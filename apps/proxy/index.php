@@ -50,40 +50,42 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
   echo json_encode($responseDto);
   exit;
 }
-else if ($_SERVER["REQUEST_METHOD"] == "POST") {
+elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->info("POST endpoint is triggered. Executing...");
   
-  $body = array(
+  $requestDto = array(
     "value" => 10,
     "tag" => "POST",
   );
-  $postdata = http_build_query(json_encode($body));
 
-  $ch = curl_init()
-  $headers = array(
-    "Accept: application/json",
-    "Content-Type: application/json",
-  );
-  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  curl_setopt($ch, CURLOPT_URL, "http://localhost:8081/persistence");
-  curl_setopt($ch, CURLOPT_POST, true);
-  curl_setopt($ch, CURLOPT_POSTbody, $postdata);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  $result = curl_exec($ch);
-  curl_close($ch);
 
-  echo $result;
+  try {
+    $ch = curl_init();
+    $headers = array(
+      "Accept: application/json",
+      "Content-Type: application/json",
+    );
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $requestDto);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
 
-  if ($result === FALSE) {
-    $logger->error("Failed.");
-    http_response_code(500);
-    echo json_encode(["message" => "Failed"]);
+    if ($result === FALSE) {
+      $logger->error("Request to persistence service is failed.");
+      http_response_code(500);
+      echo json_encode(["message" => "Request to persistence service is failed."]);
+    }
+    else {
+      http_response_code(201);
+      echo $result;
+    }
   }
-  else {
-    http_response_code(201);
-    echo $result;
+  catch (Exception $e) {
+    echo $e->getMessage();
   }
-
   exit;
 }
 else {
