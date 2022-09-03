@@ -22,16 +22,9 @@ spl_autoload_register(function ($class) {
 
 header("Content-type: application/json; charset=UTF-8");
 
+$logger->info("Parsing request URI...");
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
 $parts = explode("/", $uri);
-
-if (count($parts) < 3) {
-  $logger->error("URI is given wrong.");
-  http_response_code(400);
-  echo json_encode(["message" => "Endpoint does not exist."]);
-  exit;
-}
 
 if ($parts[1] != "proxy") {
   $logger->error("Endpoint does not exist.");
@@ -39,23 +32,62 @@ if ($parts[1] != "proxy") {
   echo json_encode(["message" => "Endpoint does not exist."]);
   exit;
 }
-
-if ($parts[2] != "method1") {
-  $logger->error("Endpoint does not exist.");
-  http_response_code(404);
-  echo json_encode(["message" => "Endpoint does not exist."]);
-  exit;
+else {
+  $logger->info("Request URI is parsed successfully.");
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-  $logger->info("GET");
+  $logger->info("GET endpoint is triggered. Executing...");
+
+  $randomNumber = random_int(0, 100);
+  $responseDto = array(
+    "message" => "Suceeded.",
+    "value" => $randomNumber,
+    "tag" => "GET",
+  );
+
   http_response_code(200);
-  echo json_encode(["message" => "GET"]);
+  echo json_encode($responseDto);
   exit;
 }
 else if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $logger->info("POST");
-  http_response_code(201);
-  echo json_encode(["message" => "POST"]);
+  $logger->info("POST endpoint is triggered. Executing...");
+  
+  $body = array(
+    "value" => 10,
+    "tag" => "POST",
+  );
+  $postdata = http_build_query(json_encode($body));
+
+  $ch = curl_init()
+  $headers = array(
+    "Accept: application/json",
+    "Content-Type: application/json",
+  );
+  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+  curl_setopt($ch, CURLOPT_URL, "http://localhost:8081/persistence");
+  curl_setopt($ch, CURLOPT_POST, true);
+  curl_setopt($ch, CURLOPT_POSTbody, $postdata);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  $result = curl_exec($ch);
+  curl_close($ch);
+
+  echo $result;
+
+  if ($result === FALSE) {
+    $logger->error("Failed.");
+    http_response_code(500);
+    echo json_encode(["message" => "Failed"]);
+  }
+  else {
+    http_response_code(201);
+    echo $result;
+  }
+
+  exit;
+}
+else {
+  http_response_code(400);
+  echo json_encode(["message" => "Only GET and POST methods are allowed."]);
   exit;
 }
