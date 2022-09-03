@@ -21,6 +21,14 @@ done
 # Docker
 dockerNetwork="php-tracing"
 
+# Fluentd
+declare -A fluentd
+fluentd["name"]="fluentd"
+fluentd["imageName"]="fluentd"
+fluentd["newrelicEndpoint"]="https://log-api.eu.newrelic.com/log/v1"
+fluentd["logLevel"]="info"
+fluentd["port"]=24224
+
 # Proxy
 declare -A proxy
 proxy["name"]="proxy-php"
@@ -42,6 +50,14 @@ docker network create \
 
 ### Build ###
 
+# Fluentd
+sudo docker build \
+  --build-arg licenseKey=$NEWRELIC_LICENSE_KEY \
+  --build-arg baseUri=${fluentd[newrelicEndpoint]} \
+  --build-arg logLevel=${fluentd[logLevel]} \
+  --tag ${fluentd[imageName]} \
+  "../../apps/fluentd/."
+
 # Proxy
 docker build \
   --build-arg newRelicAppName=${proxy[name]} \
@@ -59,11 +75,22 @@ docker build \
 
 ### Run ###
 
+# Fluentd
+sudo docker run \
+  -d \
+  --rm \
+  --network $dockerNetwork \
+  --name ${fluentd[name]} \
+  -p ${fluentd[port]}:${fluentd[port]} \
+  ${fluentd[imageName]}
+
 # Proxy
 docker run \
   -d \
   --rm \
   --network $dockerNetwork \
+  --log-driver="fluentd" \
+  --log-opt "fluentd-address=${fluentd[name]}:${fluentd[port]}" \
   --name "${proxy[name]}" \
   -p ${proxy[port]}:80 \
   ${proxy[imageName]}
@@ -73,6 +100,8 @@ docker run \
   -d \
   --rm \
   --network $dockerNetwork \
+  --log-driver="fluentd" \
+  --log-opt "fluentd-address=${fluentd[name]}:${fluentd[port]}" \
   --name "${persistence[name]}" \
   -p ${persistence[port]}:80 \
   ${persistence[imageName]}
