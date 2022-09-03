@@ -90,7 +90,7 @@ docker run \
   --rm \
   --network $dockerNetwork \
   --log-driver="fluentd" \
-  --log-opt "fluentd-address=${fluentd[name]}:${fluentd[port]}" \
+  --log-opt "fluentd-address=localhost:${fluentd[port]}" \
   --name "${proxy[name]}" \
   -p ${proxy[port]}:80 \
   ${proxy[imageName]}
@@ -101,7 +101,7 @@ docker run \
   --rm \
   --network $dockerNetwork \
   --log-driver="fluentd" \
-  --log-opt "fluentd-address=${fluentd[name]}:${fluentd[port]}" \
+  --log-opt "fluentd-address=localhost:${fluentd[port]}" \
   --name "${persistence[name]}" \
   -p ${persistence[port]}:80 \
   ${persistence[imageName]}
