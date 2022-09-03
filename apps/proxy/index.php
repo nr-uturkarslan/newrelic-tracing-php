@@ -58,7 +58,6 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     "tag" => "POST",
   );
 
-
   try {
     $ch = curl_init();
     $headers = array(
