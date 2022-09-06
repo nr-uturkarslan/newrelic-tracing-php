@@ -5,16 +5,13 @@ declare(strict_types=1);
 require __DIR__ . "/vendor/autoload.php";
 
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Formatter\JsonFormatter;
+use Monolog\Handler\BufferHandler;
 use NewRelic\Monolog\Enricher\{Handler, Processor};
 
 # Init logger
 $logger = new Logger("my_logger");
 $logger->pushProcessor(new Processor);
-$streamHandler = new StreamHandler("php://stdout");
-$streamHandler->setFormatter(new JsonFormatter());
-$logger->pushHandler($streamHandler);
+$logger->pushHandler(new BufferHandler(new Handler));
 
 spl_autoload_register(function ($class) {
     require __DIR__ . "/$class.php";
@@ -44,13 +41,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     "tag" => "POST",
   );
   
-  $logger->error("POST method is executed successfully.");
+  $logger->info("POST method is executed successfully.");
 
   http_response_code(201);
   echo json_encode($responseDto);
   exit;
 }
 else {
+  $logger->warning("Only POST method is allowed.");
+
   http_response_code(400);
   echo json_encode(["message" => "Only POST method is allowed."]);
   exit;

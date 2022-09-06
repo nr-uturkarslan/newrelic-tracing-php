@@ -5,16 +5,13 @@ declare(strict_types=1);
 require __DIR__ . "/vendor/autoload.php";
 
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Formatter\JsonFormatter;
+use Monolog\Handler\BufferHandler;
 use NewRelic\Monolog\Enricher\{Handler, Processor};
 
 # Init logger
 $logger = new Logger("my_logger");
 $logger->pushProcessor(new Processor);
-$streamHandler = new StreamHandler("php://stdout");
-$streamHandler->setFormatter(new JsonFormatter());
-$logger->pushHandler($streamHandler);
+$logger->pushHandler(new BufferHandler(new Handler));
 
 spl_autoload_register(function ($class) {
     require __DIR__ . "/$class.php";
