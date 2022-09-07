@@ -85,6 +85,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   exit;
 }
 else {
+  $logger->error("Only GET and POST methods are allowed.");
   http_response_code(400);
   echo json_encode(["message" => "Only GET and POST methods are allowed."]);
   exit;
