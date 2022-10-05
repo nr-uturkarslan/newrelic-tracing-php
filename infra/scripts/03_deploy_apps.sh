@@ -12,6 +12,7 @@ while (( "$#" )); do
       ;;
   esac
 done
+
 ##################
 ### Apps Setup ###
 ##################
@@ -20,6 +21,14 @@ done
 
 # Docker
 dockerNetwork="php-tracing"
+
+# MySQL
+declare -A mysql
+mysql["name"]="mysql"
+mysql["imageName"]="mysql:8"
+mysql["port"]=3306
+mysql["username"]="root"
+mysql["password"]="pass"
 
 # Proxy
 declare -A proxy
@@ -59,6 +68,15 @@ docker build \
 
 ### Run ###
 
+# MySQL
+docker run \
+  -d \
+  --network $dockerNetwork \
+  --name "${mysql[name]}" \
+  -p "${mysql[port]}":"${mysql[port]}" \
+  -e MYSQL_ROOT_PASSWORD="${mysql[password]}" \
+  ${mysql[imageName]}
+
 # Proxy
 docker run \
   -d \
@@ -75,5 +93,8 @@ docker run \
   --network $dockerNetwork \
   --name "${persistence[name]}" \
   -p ${persistence[port]}:80 \
+  -e MYSQL_USERNAME="${mysql[username]}" \
+  -e MYSQL_PASSWORD="${mysql[password]}" \
+  -e MYSQL_PORT="${mysql[port]}" \
   ${persistence[imageName]}
 ######
