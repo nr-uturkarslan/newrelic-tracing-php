@@ -36,16 +36,47 @@ else {
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $logger->info("GET endpoint is triggered. Executing...");
 
-  $randomNumber = random_int(0, 100);
-  $responseDto = array(
-    "message" => "Suceeded.",
-    "value" => $randomNumber,
-    "tag" => "GET",
-  );
+  try {
+    $ch = curl_init();
+    $headers = array(
+      "Accept: application/json",
+      "Content-Type: application/json",
+    );
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+  }
+  catch (Exception $e) {
+    $logger->error("Request to persistence service is failed.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Request to persistence service failed. " . $e->getMessage(),
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
 
-  http_response_code(200);
-  echo json_encode($responseDto);
-  exit;
+  if ($result === FALSE) {
+    $logger->error("Request to persistence service is failed.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Request to persistence service failed.",
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
+  else {
+    $logger->info("Request to persistence service is succeeded.");
+    http_response_code(200);
+    echo $result;
+    exit;
+  }
 }
 elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->info("POST endpoint is triggered. Executing...");
@@ -72,7 +103,12 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result === FALSE) {
       $logger->error("Request to persistence service is failed.");
       http_response_code(500);
-      echo json_encode(["message" => "Request to persistence service is failed."]);
+      $responseDto = array(
+        "message" => "Request to persistence service failed.",
+        "statusCode" => 500,
+        "data" => NULL,
+      );
+      echo json_encode($responseDto);
     }
     else {
       http_response_code(201);
@@ -80,13 +116,25 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   }
   catch (Exception $e) {
-    echo $e->getMessage();
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Request to persistence service failed. " . $e->getMessage(),
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
   }
   exit;
 }
 else {
-  $logger->error("Only GET and POST methods are allowed.");
+  $logger->warning("Only GET, POST and DELETE methods are allowed.");
+
   http_response_code(400);
-  echo json_encode(["message" => "Only GET and POST methods are allowed."]);
+  $responseDto = array(
+    "message" => "Only GET, POST and DELETE methods are allowed.",
+    "statusCode" => 400,
+    "data" => NULL,
+  );
+  echo json_encode($responseDto);
   exit;
 }
