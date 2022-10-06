@@ -19,18 +19,6 @@ spl_autoload_register(function ($class) {
 
 header("Content-type: application/json; charset=UTF-8");
 
-$mysqlServer = getenv('MYSQL_SERVER');
-$mysqlUserName = getenv('MYSQL_USERNAME');
-$mysqlPassword = getenv('MYSQL_PASSWORD');
-$mysqlDatabase = getenv('MYSQL_DATABASE');
-$mysqlTable = getenv('MYSQL_TABLE');
-
-# Connect to MySQL
-$conn = new mysqli($mysqlServer, $mysqlUserName, $mysqlPassword, $mysqlDatabase);
-if ($conn->connect_error) {
-  die("Connection to MySQL DB has failed: " . $conn->connect_error);
-}
-
 $logger->info("Parsing request URI...");
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $parts = explode("/", $uri);
@@ -45,6 +33,31 @@ else {
   $logger->info("Request URI is parsed successfully.");
 }
 
+$mysqlServer = getenv('MYSQL_SERVER');
+$mysqlUserName = getenv('MYSQL_USERNAME');
+$mysqlPassword = getenv('MYSQL_PASSWORD');
+$mysqlDatabase = getenv('MYSQL_DATABASE');
+$mysqlTable = getenv('MYSQL_TABLE');
+
+# Connect to MySQL
+try {
+  $logger->info("Connecting to database...");
+  $conn = new mysqli($mysqlServer, $mysqlUserName, $mysqlPassword, $mysqlDatabase);
+}
+catch (Exception $e) {
+  $logger->error("Connecting to database is failed." . $e->getMessage());
+
+  http_response_code(500);
+    $responseDto = array(
+      "message" => "Connection to MySQL DB has failed: " . $e->getMessage(),
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+}
+
+# GET handler
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $logger->info("GET endpoint is triggered. Executing...");
 
@@ -85,6 +98,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $logger->info("GET method is executed successfully.");
   exit;
 }
+
+# POST handler
 elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->info("POST endpoint is triggered. Executing...");
 
@@ -113,10 +128,44 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->info("POST method is executed successfully.");
   exit;
 }
+
+# DELETE handler
+elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
+  $logger->info("DELETE endpoint is triggered. Executing...");
+
+  $sql = "DELETE FROM " . $mysqlTable;
+
+  if ($conn->query($sql) === TRUE) {
+    http_response_code(200);
+    $responseDto = array(
+      "message" => "Deleting values is succeeded.",
+      "statusCode" => 200,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+  }
+  else {
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Deleting values is failed." . $conn->error,
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+  }
+
+  $logger->info("DELETE method is executed successfully.");
+  exit;
+}
 else {
-  $logger->warning("Only POST method is allowed.");
+  $logger->warning("Only GET, POST and DELETE methods are allowed.");
 
   http_response_code(400);
-  echo json_encode(["message" => "Only POST method is allowed."]);
+  $responseDto = array(
+    "message" => "Only GET, POST and DELETE methods are allowed.",
+    "statusCode" => 400,
+    "data" => NULL,
+  );
+  echo json_encode($responseDto);
   exit;
 }
