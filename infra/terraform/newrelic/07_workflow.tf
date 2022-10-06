@@ -22,7 +22,7 @@ resource "newrelic_workflow" "php_policy_to_email" {
   # }
 
   issues_filter {
-    name = "policy-name-${var.newrelic_alert_policy.name}"
+    name = "policy-name-${newrelic_alert_policy.php.name}"
     type = "FILTER"
 
     predicate {
