@@ -73,6 +73,7 @@ docker build \
 # MySQL
 docker run \
   -d \
+  --rm \
   --network $dockerNetwork \
   --name "${mysql[name]}" \
   -p "${mysql[port]}":"${mysql[port]}" \
