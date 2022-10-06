@@ -16,6 +16,8 @@ RUN rm composer-setup.php
 
 RUN /usr/local/bin/composer self-update
 RUN /usr/local/bin/composer require newrelic/monolog-enricher -W --quiet
+
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 ######
 
 ### New Relic ###
