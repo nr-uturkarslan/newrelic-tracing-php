@@ -14,10 +14,22 @@ $logger->pushProcessor(new Processor);
 $logger->pushHandler(new BufferHandler(new Handler));
 
 spl_autoload_register(function ($class) {
-    require __DIR__ . "/$class.php";
+  require __DIR__ . "/$class.php";
 });
 
 header("Content-type: application/json; charset=UTF-8");
+
+$mysqlServer = getenv('MYSQL_SERVER');
+$mysqlUserName = getenv('MYSQL_USERNAME');
+$mysqlPassword = getenv('MYSQL_PASSWORD');
+$mysqlDatabase = getenv('MYSQL_DATABASE');
+$mysqlTable = getenv('MYSQL_TABLE');
+
+# Connect to MySQL
+$conn = new mysqli($mysqlServer, $mysqlUserName, $mysqlPassword, $mysqlDatabase);
+if ($conn->connect_error) {
+  die("Connection to MySQL DB has failed: " . $conn->connect_error);
+}
 
 $logger->info("Parsing request URI...");
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -33,18 +45,72 @@ else {
   $logger->info("Request URI is parsed successfully.");
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "GET") {
+  $logger->info("GET endpoint is triggered. Executing...");
+
+  $sql = "SELECT id, data FROM " . $mysqlTable;
+  $result = $conn->query($sql);
+
+  $counter = 0;
+  $data = array();
+
+  if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+      $entry = array(
+        "id" => $row["id"],
+        "data" => $row["data"],
+      );
+      $data[$counter] = $entry;
+      $counter = $counter + 1;
+    }
+
+    http_response_code(200);
+    $responseDto = array(
+      "message" => "Retrieving values is succeeded.",
+      "statusCode" => 200,
+      "data" => $data,
+    );
+    echo json_encode($responseDto);
+  }
+  else {
+    http_response_code(200);
+    $responseDto = array(
+      "message" => "Retrieving values is succeeded.",
+      "statusCode" => 200,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+  }
+  
+  $logger->info("GET method is executed successfully.");
+  exit;
+}
+elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   $logger->info("POST endpoint is triggered. Executing...");
 
-  $responseDto = array(
-    "value" => 20,
-    "tag" => "POST",
-  );
-  
-  $logger->info("POST method is executed successfully.");
+  $sql = "INSERT INTO " . $mysqlTable . "(data)
+  VALUES ('John')";
 
-  http_response_code(201);
-  echo json_encode($responseDto);
+  if ($conn->query($sql) === TRUE) {
+    http_response_code(201);
+    $responseDto = array(
+      "message" => "Creating new value is succeeded.",
+      "statusCode" => 201,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+  }
+  else {
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Creating new value is failed." . $conn->error,
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+  }
+
+  $logger->info("POST method is executed successfully.");
   exit;
 }
 else {
