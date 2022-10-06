@@ -29,6 +29,8 @@ mysql["imageName"]="mysql:8"
 mysql["port"]=3306
 mysql["username"]="root"
 mysql["password"]="pass"
+mysql["database"]="mydb"
+mysql["table"]="myvalues"
 
 # Proxy
 declare -A proxy
@@ -77,7 +79,20 @@ docker run \
   -e MYSQL_ROOT_PASSWORD="${mysql[password]}" \
   ${mysql[imageName]}
 
+# Create database & table
+sleep 2
+sudo docker exec \
+  -it ${mysql[name]} \
+  mysql \
+  --user=${mysql[username]} \
+  --password=${mysql[password]} \
+  --execute \
+  "create database if not exists ${mysql[database]};\
+  use ${mysql[database]};\
+  create table if not exists ${mysql[table]} (id int unsigned auto_increment primary key, data varchar(255));"
+
 # Proxy
+docker stop "${proxy[name]}"
 docker run \
   -d \
   --rm \
@@ -87,14 +102,17 @@ docker run \
   ${proxy[imageName]}
 
 # Persistence
+docker stop "${persistence[name]}"
 docker run \
   -d \
   --rm \
   --network $dockerNetwork \
   --name "${persistence[name]}" \
   -p ${persistence[port]}:80 \
+  -e MYSQL_SERVER="${mysql[name]}" \
   -e MYSQL_USERNAME="${mysql[username]}" \
   -e MYSQL_PASSWORD="${mysql[password]}" \
-  -e MYSQL_PORT="${mysql[port]}" \
+  -e MYSQL_DATABASE="${mysql[database]}" \
+  -e MYSQL_TABLE="${mysql[table]}" \
   ${persistence[imageName]}
 ######
