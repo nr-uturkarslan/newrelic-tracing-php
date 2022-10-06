@@ -126,6 +126,52 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
   }
   exit;
 }
+elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
+  $logger->info("DELETE endpoint is triggered. Executing...");
+
+  try {
+    $ch = curl_init();
+    $headers = array(
+      "Accept: application/json",
+      "Content-Type: application/json",
+    );
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+  }
+  catch (Exception $e) {
+    $logger->error("Request to persistence service is failed.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Request to persistence service failed. " . $e->getMessage(),
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
+
+  if ($result === FALSE) {
+    $logger->error("Request to persistence service is failed.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Request to persistence service failed.",
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
+  else {
+    $logger->info("Request to persistence service is succeeded.");
+    http_response_code(200);
+    echo $result;
+    exit;
+  }
+}
 else {
   $logger->warning("Only GET, POST and DELETE methods are allowed.");
 
