@@ -32,6 +32,12 @@ mysql["password"]="pass"
 mysql["database"]="mydb"
 mysql["table"]="myvalues"
 
+# PHP daemon
+declare -A phpdaemon
+phpdaemon["name"]="newrelic-php-daemon"
+phpdaemon["imageName"]="newrelic/php-daemon"
+phpdaemon["port"]=31339
+
 # Proxy
 declare -A proxy
 proxy["name"]="proxy-php"
@@ -57,6 +63,7 @@ docker network create \
 docker build \
   --build-arg newRelicAppName=${proxy[name]} \
   --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --build-arg newRelicDaemonAddress="${phpdaemon[name]}:${phpdaemon[port]}" \
   --tag ${proxy[imageName]} \
   "../../apps/proxy/."
 
@@ -64,6 +71,7 @@ docker build \
 docker build \
   --build-arg newRelicAppName=${persistence[name]} \
   --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --build-arg newRelicDaemonAddress="${phpdaemon[name]}:${phpdaemon[port]}" \
   --tag ${persistence[imageName]} \
   "../../apps/persistence/."
 ######
@@ -91,6 +99,15 @@ sudo docker exec \
   "create database if not exists ${mysql[database]};\
   use ${mysql[database]};\
   create table if not exists ${mysql[table]} (id int unsigned auto_increment primary key, data varchar(255));"
+
+# PHP daemon
+docker stop "${phpdaemon[name]}"
+docker run \
+  -d \
+  --rm \
+  --network $dockerNetwork \
+  --name "${phpdaemon[name]}" \
+  ${phpdaemon[imageName]}
 
 # Proxy
 docker stop "${proxy[name]}"

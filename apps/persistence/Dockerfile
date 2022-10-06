@@ -23,6 +23,7 @@ RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 ### New Relic ###
 ARG newRelicAppName
 ARG newRelicLicenseKey
+ARG newRelicDaemonAddress
 
 RUN \
   curl -L "https://download.newrelic.com/php_agent/release/newrelic-php5-10.2.0.314-linux.tar.gz" | tar -C /tmp -zx && \
@@ -36,6 +37,7 @@ RUN sed -i \
     -e "s/newrelic.appname = \"PHP Application\"/newrelic.appname = $newRelicAppName/" \
     -e "s/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/" \
     -e "s/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/" \
+    -e "s/;newrelic.daemon.address =.*/newrelic.daemon.address = $newRelicDaemonAddress/" \
     /usr/local/etc/php/conf.d/newrelic.ini
 ######
 
