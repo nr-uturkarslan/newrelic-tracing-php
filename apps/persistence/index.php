@@ -5,13 +5,9 @@ declare(strict_types=1);
 require __DIR__ . "/vendor/autoload.php";
 
 use Monolog\Logger;
-use Monolog\Handler\BufferHandler;
-use NewRelic\Monolog\Enricher\{Handler, Processor};
 
 # Init logger
 $logger = new Logger("my_logger");
-$logger->pushProcessor(new Processor);
-$logger->pushHandler(new BufferHandler(new Handler));
 
 spl_autoload_register(function ($class) {
   require __DIR__ . "/$class.php";

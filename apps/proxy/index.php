@@ -5,13 +5,9 @@ declare(strict_types=1);
 require __DIR__ . "/vendor/autoload.php";
 
 use Monolog\Logger;
-use Monolog\Handler\BufferHandler;
-use NewRelic\Monolog\Enricher\{Handler, Processor};
 
 # Init logger
 $logger = new Logger("my_logger");
-$logger->pushProcessor(new Processor);
-$logger->pushHandler(new BufferHandler(new Handler));
 
 spl_autoload_register(function ($class) {
     require __DIR__ . "/$class.php";
@@ -47,6 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $result = curl_exec($ch);
     curl_close($ch);
+
+    $logger->info("Request to persistence service is succeeded.");
   }
   catch (Exception $e) {
     $logger->error("Request to persistence service is failed.");
@@ -72,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     exit;
   }
   else {
-    $logger->info("Request to persistence service is succeeded.");
+    $logger->info("GET method is executed successfully.");
     http_response_code(200);
     echo $result;
     exit;
@@ -100,6 +98,8 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = curl_exec($ch);
     curl_close($ch);
 
+    $logger->info("Request to persistence service is succeeded.");
+
     if ($result === FALSE) {
       $logger->error("Request to persistence service is failed.");
       http_response_code(500);
@@ -111,6 +111,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
       echo json_encode($responseDto);
     }
     else {
+      $logger->info("POST method is executed successfully.");
       http_response_code(201);
       echo $result;
     }
@@ -141,6 +142,8 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $result = curl_exec($ch);
     curl_close($ch);
+
+    $logger->info("Request to persistence service is succeeded.");
   }
   catch (Exception $e) {
     $logger->error("Request to persistence service is failed.");
@@ -166,7 +169,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
     exit;
   }
   else {
-    $logger->info("Request to persistence service is succeeded.");
+    $logger->info("DELETE method is executed successfully.");
     http_response_code(200);
     echo $result;
     exit;

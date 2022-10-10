@@ -25,7 +25,7 @@ ARG newRelicLicenseKey
 ARG newRelicDaemonAddress
 
 RUN \
-  curl -L "https://download.newrelic.com/php_agent/release/newrelic-php5-10.2.0.314-linux.tar.gz" | tar -C /tmp -zx && \
+  curl -L "https://download.newrelic.com/php_agent/archive/10.2.0.314/newrelic-php5-10.2.0.314-linux.tar.gz" | tar -C /tmp -zx && \
   export NR_INSTALL_USE_CP_NOT_LN=1 && \
   export NR_INSTALL_SILENT=1 && \
   /tmp/newrelic-php5-*/newrelic-install install && \
@@ -37,6 +37,9 @@ RUN sed -i \
     -e "s/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/" \
     -e "s/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/" \
     -e "s/;newrelic.daemon.address =.*/newrelic.daemon.address = $newRelicDaemonAddress/" \
+    -e "s/;newrelic.application_logging.enabled =.*/newrelic.application_logging.enabled = true/" \
+    -e "s/;newrelic.application_logging.forwarding.enabled =.*/newrelic.application_logging.forwarding.enabled = true/" \
+    -e "s/;newrelic.application_logging.forwarding.log_level =.*/newrelic.application_logging.forwarding.log_level = \"INFO\"/" \
     /usr/local/etc/php/conf.d/newrelic.ini
 ######
 
