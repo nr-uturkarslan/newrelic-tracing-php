@@ -33,6 +33,6 @@ resource "newrelic_workflow" "php_policy_to_email" {
   }
 
   destination {
-    channel_id = newrelic_notification_destination.email.id
+    channel_id = newrelic_notification_channel.email.id
   }
 }

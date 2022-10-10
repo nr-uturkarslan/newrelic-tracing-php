@@ -14,7 +14,7 @@ resource "newrelic_nrql_alert_condition" "response_time_above_3_sec_at_least_onc
   enabled                        = true
   violation_time_limit_seconds   = 3 * 24 * 60 * 60 // days calculated into seconds
   fill_option                    = "none"
-  aggregation_window             = 30
+  aggregation_window             = 60
   aggregation_method             = "event_flow"
   aggregation_delay              = 120
   expiration_duration            = 120
@@ -40,4 +40,20 @@ resource "newrelic_nrql_alert_condition" "response_time_above_3_sec_at_least_onc
     threshold_occurrences = "at_least_once"
   }
 }
+
+# Alert condition tag
+resource "newrelic_entity_tags" "response_time_above_3_sec_at_least_once" {
+    guid = newrelic_nrql_alert_condition.response_time_above_3_sec_at_least_once.entity_guid 
+
+    tag {
+        key = "environment"
+        values = ["prod"]
+    }
+
+    tag {
+        key = "maintainers"
+        values = ["Bill Burr", "Chris Rock"]
+    }
+}
+
 #########
