@@ -1,4 +1,5 @@
 *.pem
 
 .terraform*
+terraform.tfstate*
 tfplan
